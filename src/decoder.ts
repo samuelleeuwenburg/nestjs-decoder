@@ -11,7 +11,6 @@ export const Decode =
     const value = descriptor.value!;
 
     (descriptor as any).value = function (argument: T) {
-      console.log(argument)
       try {
         return value.call(this, codec.unsafeDecode(argument));
       } catch (error) {
