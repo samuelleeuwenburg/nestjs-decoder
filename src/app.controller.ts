@@ -1,48 +1,30 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { Codec, GetType, number, string } from 'purify-ts/Codec';
+import { Decode } from './decoder';
 
-const User = Codec.interface({
+const filterDecoder = Codec.interface({
+  name: string,
+  size: string,
+});
+type Filter = GetType<typeof filterDecoder>;
+
+const userDecoder = Codec.interface({
   username: string,
   age: number,
 });
 
-type User = GetType<typeof User>;
-
-const Decode =
-  <T>(codec: Codec<T>) =>
-  (
-    target: any,
-    propertyKey: string,
-    descriptor: TypedPropertyDescriptor<Fn<T>>,
-  ) => {
-    const value = descriptor.value!;
-
-    (descriptor as any).value = function (argument: T) {
-      try {
-        return value.call(this, codec.unsafeDecode(argument));
-      } catch (error) {
-        throw new BadRequestException(error.message);
-      }
-    };
-  };
-
-type Fn<T> = (x: T) => void;
+type User = GetType<typeof userDecoder>;
 
 @Controller('/user')
 export class AppController {
   @Get()
-  getHello(): User {
-    return { username: 'foo', age: 60 };
+  @Decode(filterDecoder)
+  getHello(@Query() filter: Filter) {
+    return `These is your filter: ${filter.name} size: ${filter.size}`;
   }
 
   @Post()
-  @Decode(User)
+  @Decode(userDecoder)
   sendUser(@Body() user: User) {
     return `hello ${user.username}, you are ${user.age} old \n`;
   }
