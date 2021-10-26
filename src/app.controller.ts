@@ -18,8 +18,8 @@ type User = GetType<typeof userDecoder>;
 @Controller('/user')
 export class AppController {
   @Get()
-  @Decode(filterDecoder)
-  getHello(@Query() filter: Filter) {
+  @Decode(filterDecoder, undefined, userDecoder)
+  getHello(@Query() filter: Filter, foo: string, @Body() user: User) {
     return `These is your filter: ${filter.name} size: ${filter.size}`;
   }
 
